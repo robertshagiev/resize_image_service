@@ -1,0 +1,3 @@
+server:
+  port: 8080
+max_parallel_requests: 1
