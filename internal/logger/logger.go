@@ -10,7 +10,13 @@ type Logger struct {
 	errorLogger *log.Logger
 }
 
-func New() *Logger {
+type LoggerInterface interface {
+	Info(msg string)
+	Error(msg string)
+	Fatal(msg string)
+}
+
+func New() LoggerInterface {
 	return &Logger{
 		infoLogger:  log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
 		errorLogger: log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),

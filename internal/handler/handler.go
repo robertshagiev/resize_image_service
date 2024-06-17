@@ -5,26 +5,31 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"resize_image_service/internal/logger"
 	"strconv"
 	"sync"
 )
 
 type Handler struct {
-	resizer             Resizer
-	logger              *logger.Logger
+	imageService        ImageService
+	logger              Logger
 	mu                  sync.Mutex
 	maxParallelRequests int
 	currentRequests     int
 }
 
-type Resizer interface {
+type ImageService interface {
 	ResizeImage(url string, width, height int) ([]byte, string, error)
 }
 
-func NewHandler(resizer Resizer, log *logger.Logger, maxParallelRequests int) *Handler {
+type Logger interface {
+	Info(msg string)
+	Error(msg string)
+	Fatal(msg string)
+}
+
+func NewHandler(imageService ImageService, log Logger, maxParallelRequests int) *Handler {
 	return &Handler{
-		resizer:             resizer,
+		imageService:        imageService,
 		logger:              log,
 		maxParallelRequests: maxParallelRequests,
 		currentRequests:     0,
@@ -75,7 +80,7 @@ func (h *Handler) ResizeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageData, format, err := h.resizer.ResizeImage(decodedURL, width, height)
+	imageData, format, err := h.imageService.ResizeImage(decodedURL, width, height)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("Failed to resize image: %v", err))
 		h.resWithError(w, http.StatusInternalServerError, "failed to resize image")
