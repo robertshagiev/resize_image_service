@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"resize_image_service/internal/config"
 	"resize_image_service/internal/handler"
 	"resize_image_service/internal/logger"
@@ -13,7 +14,12 @@ import (
 func main() {
 	log := logger.New()
 
-	cfg, err := config.LoadConfig("config.yaml")
+	configPath, err := filepath.Abs("../internal/config/config.yaml")
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Failed to get absolute path: %v", err))
+	}
+
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Failed to load config: %v", err))
 	}
