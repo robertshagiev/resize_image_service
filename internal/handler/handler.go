@@ -10,15 +10,11 @@ import (
 )
 
 type Handler struct {
-	imageService        ImageService
+	imageService        ResizeImage
 	logger              Logger
 	mu                  sync.Mutex
 	maxParallelRequests int
 	currentRequests     int
-}
-
-type ImageService interface {
-	ResizeImage(url string, width, height int) ([]byte, string, error)
 }
 
 type Logger interface {
@@ -27,7 +23,11 @@ type Logger interface {
 	Fatal(msg string)
 }
 
-func NewHandler(imageService ImageService, log Logger, maxParallelRequests int) *Handler {
+type ResizeImage interface {
+	ResizeImage(url string, width, height int) ([]byte, string, error)
+}
+
+func NewHandler(imageService ResizeImage, log Logger, maxParallelRequests int) *Handler {
 	return &Handler{
 		imageService:        imageService,
 		logger:              log,

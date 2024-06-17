@@ -1,5 +1,9 @@
 package usecase
 
+type ImageServiceInterface interface {
+	ResizeImage(url string, width, height int) ([]byte, string, error)
+}
+
 type ImageService struct {
 	resizer Resizer
 	logger  LoggerInterface
