@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"resize_image_service/internal/api"
 	"resize_image_service/internal/config"
 	"resize_image_service/internal/handler"
+	api "resize_image_service/internal/integration"
 	"resize_image_service/internal/logger"
 	"resize_image_service/internal/resize"
 	"resize_image_service/internal/router"
@@ -26,7 +26,7 @@ func main() {
 		log.Fatal(fmt.Sprintf("Failed to load config: %v", err))
 	}
 
-	apiCl := api.NewAPI()
+	apiCl := api.NewIntegration()
 	resizer := resize.NewResizer()
 	imageService := usecase.NewImageService(apiCl, resizer, log)
 	h := handler.NewHandler(imageService, log, cfg.MaxParallelRequests)

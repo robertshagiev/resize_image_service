@@ -8,4 +8,7 @@ type ResizedImage struct {
 type ImageData struct {
 	Data        []byte
 	ContentType string
+	URL         string
+	Width       int
+	Height      int
 }
