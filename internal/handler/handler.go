@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"resize_image_service/internal/model"
 	"strconv"
 	"sync"
 )
 
 type Handler struct {
-	imageService        ResizeImage
+	usecase             ResizeImageUsecase
 	logger              Logger
 	mu                  sync.Mutex
 	maxParallelRequests int
@@ -23,13 +24,13 @@ type Logger interface {
 	Fatal(msg string)
 }
 
-type ResizeImage interface {
-	ResizeImage(url string, width, height int) ([]byte, string, error)
+type ResizeImageUsecase interface {
+	ResizeImageUsecase(url string, width, height int) (*model.ResizedImage, error)
 }
 
-func NewHandler(imageService ResizeImage, log Logger, maxParallelRequests int) *Handler {
+func NewHandler(usecase ResizeImageUsecase, log Logger, maxParallelRequests int) *Handler {
 	return &Handler{
-		imageService:        imageService,
+		usecase:             usecase,
 		logger:              log,
 		maxParallelRequests: maxParallelRequests,
 		currentRequests:     0,
@@ -80,15 +81,15 @@ func (h *Handler) ResizeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageData, format, err := h.imageService.ResizeImage(decodedURL, width, height)
+	resizedImage, err := h.usecase.ResizeImageUsecase(decodedURL, width, height)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("Failed to resize image: %v", err))
 		h.resWithError(w, http.StatusInternalServerError, "failed to resize image")
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/"+format)
-	w.Write(imageData)
+	w.Header().Set("Content-Type", "image/"+resizedImage.Format)
+	w.Write(resizedImage.Data)
 }
 
 func (h *Handler) resWithError(w http.ResponseWriter, code int, message string) {

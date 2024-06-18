@@ -5,7 +5,8 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
-	"net/http"
+
+	"resize_image_service/internal/model"
 
 	"github.com/disintegration/imaging"
 )
@@ -16,16 +17,10 @@ func NewResizer() *Resizer {
 	return &Resizer{}
 }
 
-func (r *Resizer) ResizeImage(url string, width, height int) ([]byte, string, error) {
-	resp, err := http.Get(url)
+func (r *Resizer) ResizeImage(data []byte, contentType string, width, height int) (*model.ResizedImage, error) {
+	img, format, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
-		return nil, "", err
-	}
-	defer resp.Body.Close()
-
-	img, format, err := image.Decode(resp.Body)
-	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	resizedImg := imaging.Resize(img, width, height, imaging.Lanczos)
@@ -40,8 +35,11 @@ func (r *Resizer) ResizeImage(url string, width, height int) ([]byte, string, er
 		err = jpeg.Encode(&buf, resizedImg, nil)
 	}
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	return buf.Bytes(), format, nil
+	return &model.ResizedImage{
+		Data:   buf.Bytes(),
+		Format: format,
+	}, nil
 }
