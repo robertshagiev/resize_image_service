@@ -8,15 +8,15 @@ import (
 	"resize_image_service/internal/handler"
 	"resize_image_service/internal/integration"
 	"resize_image_service/internal/logger"
-	"resize_image_service/internal/resize"
 	"resize_image_service/internal/router"
-	"resize_image_service/internal/usecase"
+	"resize_image_service/internal/service"
+	"time"
 )
 
 func main() {
 	log := logger.New()
 
-	configPath, err := filepath.Abs("../internal/config/config.yaml")
+	configPath, err := filepath.Abs("../config.yaml")
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Failed to get absolute path: %v", err))
 	}
@@ -26,9 +26,11 @@ func main() {
 		log.Fatal(fmt.Sprintf("Failed to load config: %v", err))
 	}
 
-	integration := integration.NewIntegration()
-	resizer := resize.NewResizer()
-	imageService := usecase.NewImageService(integration, resizer, log)
+	client := integration.NewHTTPClient(10 * time.Second)
+
+	imageFetcher := integration.NewImageFetcher(client)
+
+	imageService := service.NewImageService(imageFetcher, log)
 	h := handler.NewHandler(imageService, log, cfg.MaxParallelRequests)
 
 	r := router.NewRouter(h)

@@ -11,26 +11,26 @@ import (
 )
 
 type Handler struct {
-	usecase             ResizeImageUsecase
-	logger              Logger
+	service             imageService
+	logger              logger
 	mu                  sync.Mutex
 	maxParallelRequests int
 	currentRequests     int
 }
 
-type Logger interface {
+type logger interface {
 	Info(msg string)
 	Error(msg string)
 	Fatal(msg string)
 }
 
-type ResizeImageUsecase interface {
-	ResizeImageUsecase(url string, width, height int) (*model.ResizedImage, error)
+type imageService interface {
+	ResizeImage(url string, width, height int) (*model.ResizedImage, error)
 }
 
-func NewHandler(usecase ResizeImageUsecase, log Logger, maxParallelRequests int) *Handler {
+func NewHandler(service imageService, log logger, maxParallelRequests int) *Handler {
 	return &Handler{
-		usecase:             usecase,
+		service:             service,
 		logger:              log,
 		maxParallelRequests: maxParallelRequests,
 		currentRequests:     0,
@@ -81,7 +81,7 @@ func (h *Handler) ResizeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resizedImage, err := h.usecase.ResizeImageUsecase(decodedURL, width, height)
+	resizedImage, err := h.service.ResizeImage(decodedURL, width, height)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("Failed to resize image: %v", err))
 		h.resWithError(w, http.StatusInternalServerError, "failed to resize image")
