@@ -14,18 +14,27 @@ import (
 )
 
 type imageFetcher struct {
-	client *http.Client
+	client  clientHttp
+	timeout time.Duration
+}
+
+type clientHttp interface {
+	Do(req *http.Request) (*http.Response, error)
 }
 
 func NewImageFetcher(timeout time.Duration) *imageFetcher {
 	client := &http.Client{
 		Timeout: timeout,
 	}
-	return &imageFetcher{client: client}
+	return &imageFetcher{
+		client:  client,
+		timeout: timeout,
+	}
 }
 
 func (f *imageFetcher) FetchImage(url string) (*model.ImageData, error) {
-	ctx := context.Background() // Используем простой контекст
+	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
