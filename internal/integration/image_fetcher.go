@@ -13,27 +13,28 @@ import (
 	"time"
 )
 
-type imageFetcher struct {
+type ImageFetcher struct {
 	client  clientHttp
 	timeout time.Duration
 }
 
+//go:generate  mockery --with-expecter --name clientHttp
 type clientHttp interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-func NewImageFetcher(timeout time.Duration) *imageFetcher {
+func NewImageFetcher(timeout time.Duration) *ImageFetcher {
 	client := &http.Client{
 		Timeout: timeout,
 	}
-	return &imageFetcher{
+	return &ImageFetcher{
 		client:  client,
 		timeout: timeout,
 	}
 }
 
-func (f *imageFetcher) FetchImage(url string) (*model.ImageData, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+func (f *ImageFetcher) FetchImage(ctx context.Context, url string) (*model.ImageData, error) {
+	ctx, cancel := context.WithTimeout(ctx, f.timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

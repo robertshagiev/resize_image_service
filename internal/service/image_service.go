@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -16,7 +17,7 @@ type imageService struct {
 }
 
 type imageFetcher interface {
-	FetchImage(url string) (*model.ImageData, error)
+	FetchImage(ctx context.Context, url string) (*model.ImageData, error)
 }
 
 type logger interface {
@@ -32,10 +33,10 @@ func NewImageService(imageFetcher imageFetcher, logger logger) *imageService {
 	}
 }
 
-func (s *imageService) ResizeImage(url string, width, height int) (*model.ResizedImage, error) {
+func (s *imageService) ResizeImage(ctx context.Context, url string, width, height int) (*model.ResizedImage, error) {
 	s.logger.Info("Starting image resize")
 
-	imageData, err := s.imageFetcher.FetchImage(url)
+	imageData, err := s.imageFetcher.FetchImage(ctx, url)
 	if err != nil {
 		s.logger.Error("Failed to fetch image: " + err.Error())
 		return nil, err
