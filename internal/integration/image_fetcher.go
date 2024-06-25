@@ -41,7 +41,7 @@ func (f *ImageFetcher) FetchImage(ctx context.Context, url string) (*model.Image
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
-
+	fmt.Println(req)
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %w", err)
@@ -62,6 +62,9 @@ func (f *ImageFetcher) FetchImage(ctx context.Context, url string) (*model.Image
 		return nil, fmt.Errorf("error decoding image: %w", err)
 	}
 
+	fmt.Println(img.Height, img.Width)
+	fmt.Println(data)
+	fmt.Println(resp.Header.Get("Content-Type"))
 	return &model.ImageData{
 		Data:        data,
 		ContentType: resp.Header.Get("Content-Type"),

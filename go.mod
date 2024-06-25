@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/disintegration/imaging v1.6.2
+	github.com/go-test/deep v1.1.1
 	github.com/gorilla/mux v1.8.1
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v2 v2.4.0
