@@ -26,9 +26,7 @@ func main() {
 		log.Fatal(fmt.Sprintf("Failed to load config: %v", err))
 	}
 
-	client := integration.NewHTTPClient(10 * time.Second)
-
-	imageFetcher := integration.NewImageFetcher(client)
+	imageFetcher := integration.NewImageFetcher(10 * time.Second)
 
 	imageService := service.NewImageService(imageFetcher, log)
 	h := handler.NewHandler(imageService, log, cfg.MaxParallelRequests)

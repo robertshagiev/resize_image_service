@@ -5,32 +5,32 @@ import (
 	"os"
 )
 
-type Logger struct {
+type logger struct {
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
 }
 
-type LoggerIn interface {
+type Logger interface {
 	Info(msg string)
 	Error(msg string)
 	Fatal(msg string)
 }
 
-func New() LoggerIn {
-	return &Logger{
+func New() Logger {
+	return &logger{
 		infoLogger:  log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
 		errorLogger: log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
 
-func (l *Logger) Info(msg string) {
+func (l *logger) Info(msg string) {
 	l.infoLogger.Println(msg)
 }
 
-func (l *Logger) Error(msg string) {
+func (l *logger) Error(msg string) {
 	l.errorLogger.Println(msg)
 }
 
-func (l *Logger) Fatal(msg string) {
+func (l *logger) Fatal(msg string) {
 	l.errorLogger.Fatal(msg)
 }

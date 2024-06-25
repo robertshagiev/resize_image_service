@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -25,7 +26,7 @@ type logger interface {
 }
 
 type imageService interface {
-	ResizeImage(url string, width, height int) (*model.ResizedImage, error)
+	ResizeImage(ctx context.Context, url string, width, height int) (*model.ResizedImage, error)
 }
 
 func NewHandler(service imageService, log logger, maxParallelRequests int) *Handler {
@@ -38,6 +39,8 @@ func NewHandler(service imageService, log logger, maxParallelRequests int) *Hand
 }
 
 func (h *Handler) ResizeImage(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+
 	h.mu.Lock()
 	if h.currentRequests >= h.maxParallelRequests {
 		h.mu.Unlock()
@@ -81,7 +84,7 @@ func (h *Handler) ResizeImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resizedImage, err := h.service.ResizeImage(decodedURL, width, height)
+	resizedImage, err := h.service.ResizeImage(ctx, decodedURL, width, height)
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("Failed to resize image: %v", err))
 		h.resWithError(w, http.StatusInternalServerError, "failed to resize image")
